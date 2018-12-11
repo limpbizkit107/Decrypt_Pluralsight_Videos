@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from os.path import join, basename, normpath
+from shutil import copyfile
 
 def deobs_pluralsight(fpath, target_dir):
     fname = os.path.basename(fpath)
@@ -17,8 +18,8 @@ def deobfuscate(arg,dirname,fnames):
         for fname in fnames:
             fpath = os.path.join(dirname, fname)
             print fpath
-            deobs_pluralsight(fpath, target_dir)
-
+            #deobs_pluralsight(fpath, target_dir)
+            
 def connect_to_databese(path_to_database):
     conn = sqlite3.connect(path_to_database)
     c = conn.cursor()
@@ -28,6 +29,10 @@ def connect_to_databese(path_to_database):
         course_name = course[0]
         course_modules = list(c.execute('SELECT ZTITLE, Z_FOK_COURSE FROM ZMODULECD WHERE ZCOURSE = '+str(course[1])))
         create_course_structute(course_name, course_modules)
+        for module in course_modules:
+            clips = list(c.execute('SELECT ZID, ZTITLE FROM ZCLIPCD WHERE Z_FOK_MODULE = '+str(module[1])))
+            for clip in clips:
+                copyfile(source_dir+clip[0]+".psv",course_name+"/"+module[0]+"/" )
     conn.close()
 
 def create_course_structute(course, modules):
